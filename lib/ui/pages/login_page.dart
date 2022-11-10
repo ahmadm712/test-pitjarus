@@ -47,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     CustomFormField(
                       title: 'Username',
+                      hint: 'pitjarus',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter username';
@@ -60,6 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     CustomFormField(
                       title: 'Password',
+                      hint: 'admin',
                       icon: const Icon(
                         Icons.password,
                         color: kBlueColor,

@@ -5,6 +5,7 @@ class CustomFormField extends StatelessWidget {
   const CustomFormField(
       {Key? key,
       required this.title,
+      required this.hint,
       this.obsecureText = false,
       this.controller,
       this.icon = const Icon(
@@ -14,6 +15,7 @@ class CustomFormField extends StatelessWidget {
       this.validator})
       : super(key: key);
   final String title;
+  final String hint;
   final bool obsecureText;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -39,6 +41,7 @@ class CustomFormField extends StatelessWidget {
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(12),
             prefixIcon: icon,
+            hintText: hint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
             ),
