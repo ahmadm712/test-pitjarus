@@ -16,4 +16,13 @@ class ListStoreCubit extends Cubit<ListStoreState> {
       emit(ListStoreFailed(error: e.toString()));
     }
   }
+
+  void addStore(List<Store> data) {
+    try {
+      emit(ListStoreLoading());
+      emit(ListStoreHasData(data: data));
+    } catch (e) {
+      emit(ListStoreFailed(error: e.toString()));
+    }
+  }
 }

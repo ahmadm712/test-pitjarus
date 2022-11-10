@@ -28,3 +28,9 @@ Future<List<Store>> getListStore() async {
     throw e;
   }
 }
+
+void addStore(List<Store> stores) async {
+  for (var store in stores) {
+    await DatabasesHelper().insertStores(store);
+  }
+}

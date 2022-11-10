@@ -89,6 +89,18 @@ class DatabasesHelper {
     );
   }
 
+  Future<dynamic> insertListStores(List<Store> stores) async {
+    final db = await database;
+    var list = [];
+    for (var element in stores) {
+      list.add(element.toJson());
+    }
+    return await db!.rawInsert(
+      'INSERT INTO $_tblStore (store_id,store_code,store_name,address,dc_id,dc_name,account_id,account_name,subchannel_id,subchannel_name,channel_id,channel_name,area_id,area_name,region_id,region_name,latitude,longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?,?)',
+      list,
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getStoreList() async {
     final db = await database;
     final List<Map<String, dynamic>> results = await db!.query(_tblStore);

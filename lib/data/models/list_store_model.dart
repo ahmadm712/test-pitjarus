@@ -3,7 +3,6 @@
 //     final storeListResponse = storeListResponseFromJson(jsonString);
 
 import 'dart:convert';
-import 'dart:ffi';
 
 StoreListResponse storeListResponseFromJson(String str) =>
     StoreListResponse.fromJson(json.decode(str));
@@ -50,6 +49,7 @@ class Store {
     this.subchannelName,
     this.channelId,
     this.channelName,
+    this.isVisited = false,
     this.areaId,
     this.areaName,
     this.regionId,
@@ -63,6 +63,7 @@ class Store {
   String? storeName;
   String? address;
   String? dcId;
+  bool? isVisited;
   String? dcName;
   String? accountId;
   String? accountName;

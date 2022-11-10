@@ -6,10 +6,11 @@ import 'package:pitjarus_test/utils/constanst.dart';
 import 'package:pitjarus_test/utils/failure.dart';
 
 class ApiServices {
-  Future<StoreListResponse> login() async {
+  Future<StoreListResponse> login(
+      {required String username, required String password}) async {
     var loginRequest = http.MultipartRequest(postMethod, Uri.parse(baseUrl))
-      ..fields['username'] = 'pitjarus'
-      ..fields['password'] = 'admin';
+      ..fields['username'] = username //'pitjarus'
+      ..fields['password'] = password; //'admin';
 
     final streamedResponse = await loginRequest.send();
     final response = await http.Response.fromStream(streamedResponse);

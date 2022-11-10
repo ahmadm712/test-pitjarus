@@ -1,13 +1,13 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:pitjarus_test/services/location_services.dart';
+import 'package:pitjarus_test/data/models/list_store_model.dart';
+import 'package:pitjarus_test/ui/cubit/cubit/auth_cubit.dart';
 import 'package:pitjarus_test/ui/cubit/list_store_cubit/list_store_cubit.dart';
 import 'package:pitjarus_test/ui/cubit/location_cubit/location_home_cubit.dart';
+import 'package:pitjarus_test/ui/pages/detail_store_page.dart';
+import 'package:pitjarus_test/ui/pages/login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,7 +18,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Position? userPosition;
+  List<Store> listStores = [];
+  List<Marker> listAllMarker = [];
   @override
   void initState() {
     super.initState();
@@ -27,12 +28,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
+    listStores = context.read<AuthCubit>().stores;
+    listAllMarker = context.read<AuthCubit>().markers;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -55,7 +58,11 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          context.read<AuthCubit>().logout();
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, LoginPage.routeName, (route) => false);
+                        },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           padding: const EdgeInsets.all(6),
@@ -109,7 +116,17 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               // Map
-              const MapWidget(),
+              BlocConsumer<AuthCubit, AuthState>(
+                listener: (context, state) {},
+                builder: (context, state) {
+                  if (state is AuthSuccess) {
+                    listStores = context.read<AuthCubit>().stores;
+                    listAllMarker = context.read<AuthCubit>().markers;
+                    return MapWidget(allMarkers: listAllMarker);
+                  }
+                  return Container();
+                },
+              ),
               const SizedBox(
                 height: 6,
               ),
@@ -117,7 +134,103 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(
                 height: 10,
               ),
-              const ListStoreWidget(),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: BlocConsumer<AuthCubit, AuthState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    if (state is AuthSuccess) {
+                      return ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(
+                          height: 3,
+                          thickness: 1,
+                        ),
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: state.storeListResponse.stores!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final data = state.storeListResponse.stores![index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                DetailStorePage.routeName,
+                                arguments: {"data": data, "index": index},
+                              ).then((value) {
+                                setState(() {});
+                              });
+                            },
+                            child: Container(
+                              height: 60,
+                              padding: const EdgeInsets.all(6),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(data.storeName!.toString()),
+                                      Text(
+                                        data.address!,
+                                        style: const TextStyle(
+                                            color: Colors.grey, fontSize: 14),
+                                      ),
+                                      Text(
+                                        '${data.channelName} ${data.areaName}',
+                                        style: const TextStyle(
+                                            color: Colors.grey, fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (data.isVisited!)
+                                        Row(
+                                          children: const [
+                                            Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                            ),
+                                            SizedBox(
+                                              width: 4,
+                                            ),
+                                            Text('Visited')
+                                          ],
+                                        )
+                                      else
+                                        Container(),
+                                      const SizedBox(
+                                        width: 6,
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          Icon(
+                                            Icons.location_on,
+                                            color: Colors.green,
+                                          ),
+                                          Text('1m')
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+
+                    return Container();
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -127,10 +240,11 @@ class _HomePageState extends State<HomePage> {
 }
 
 class MapWidget extends StatelessWidget {
-  const MapWidget({
+  MapWidget({
     Key? key,
+    required this.allMarkers,
   }) : super(key: key);
-
+  List<Marker> allMarkers;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -140,6 +254,14 @@ class MapWidget extends StatelessWidget {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is LocationHomeSucces) {
+            allMarkers.add(Marker(
+              point: LatLng(state.data.latitude, state.data.longitude),
+              builder: (context) => const Icon(
+                Icons.location_on,
+                color: Colors.red,
+                size: 15,
+              ),
+            ));
             return ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: FlutterMap(
@@ -147,7 +269,7 @@ class MapWidget extends StatelessWidget {
                   center:
                       // ? LatLng(-6.2010575, 106.8094093)
                       LatLng(state.data.latitude, state.data.longitude),
-                  zoom: 15,
+                  zoom: 17,
                   slideOnBoundaries: true,
                   screenSize: const Size(double.infinity, 300),
                   onMapReady: () {},
@@ -158,6 +280,9 @@ class MapWidget extends StatelessWidget {
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                   ),
+                  MarkerLayer(
+                    markers: allMarkers,
+                  ),
                 ],
               ),
             );
@@ -166,46 +291,6 @@ class MapWidget extends StatelessWidget {
           return Container();
         },
       ),
-    );
-  }
-}
-
-class ListStoreWidget extends StatelessWidget {
-  const ListStoreWidget({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<ListStoreCubit, ListStoreState>(
-      listener: (context, state) {},
-      builder: (context, state) {
-        if (state is ListStoreHasData) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: state.data.length,
-              itemBuilder: (BuildContext context, int index) {
-                final data = state.data[index];
-                log(state.data.length.toString());
-                return InkWell(
-                  onTap: () {},
-                  child: Container(
-                    height: 60,
-                    padding: const EdgeInsets.all(6),
-                    child: Text(data.storeName!.toString() ?? ""),
-                  ),
-                );
-              },
-            ),
-          );
-        } else if (state is ListStoreFailed) {
-          return Text(state.error);
-        }
-        return Container();
-      },
     );
   }
 }
