@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pitjarus_test/services/location_services.dart';
+import 'package:pitjarus_test/shared/styles.dart';
 import 'package:pitjarus_test/ui/cubit/cubit/auth_cubit.dart';
 import 'package:pitjarus_test/ui/cubit/list_store_cubit/list_store_cubit.dart';
 import 'package:pitjarus_test/ui/cubit/location_cubit/location_home_cubit.dart';
@@ -34,8 +35,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Test Pitjarus',
         theme: ThemeData(
-          colorScheme:
-              ColorScheme.fromSwatch().copyWith(primary: Colors.blueGrey),
+          colorScheme: ColorScheme.fromSwatch().copyWith(primary: kBlueColor),
         ),
         home: const LoginPage(),
         debugShowCheckedModeBanner: false,

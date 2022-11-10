@@ -25,7 +25,7 @@ Future<List<Store>> getListStore() async {
       throw 'Data tidak ada';
     }
   } catch (e) {
-    throw e;
+    rethrow;
   }
 }
 

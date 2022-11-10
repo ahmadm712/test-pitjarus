@@ -19,7 +19,6 @@ class DatabasesHelper {
   }
 
   static const String _tblStore = 'store';
-  static const String _tblStores = 'stores';
 
   Future<Database> _initDb() async {
     final path = await getDatabasesPath();
@@ -58,33 +57,12 @@ class DatabasesHelper {
     ''');
   }
 
-  void _onCreate2(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE  $_tblStores (
-        id INTEGER PRIMARY KEY,
-        data TEXT
-      );
-    ''');
-  }
-
   /// Movie
   Future<int> insertStores(Store stores) async {
     final db = await database;
     return await db!.insert(
       _tblStore,
       stores.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<int> insertStoress(StoreListResponse stores) async {
-    final db = await database;
-    return await db!.insert(
-      _tblStores,
-      {
-        "id": 1,
-        "data": storeListResponseToJson(stores),
-      },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
